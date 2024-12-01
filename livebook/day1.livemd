@@ -1,0 +1,98 @@
+# Day 1
+
+## Section
+
+```elixir
+sample = """
+3   4
+4   3
+2   5
+1   3
+3   9
+3   3
+"""
+```
+
+```elixir
+defmodule Utils do
+  def parse_input(input_text) do
+    input_text
+    |> String.split("\n", trim: true)
+    |> Enum.map(&String.split(&1, " ", trim: true))
+    |> List.zip
+  end
+
+  def load_text do
+    File.read!("priv/day1.txt")
+  end
+end
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def calc_diff({left_str, right_str}) do
+    String.to_integer(left_str) - String.to_integer(right_str)
+    |> abs
+  end
+end
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+sample
+|> Utils.parse_input()
+|> Enum.map(&(&1 |> Tuple.to_list() |> Enum.sort()))
+|> List.zip()
+|> Enum.map(&Part1.calc_diff/1)
+|> Enum.sum()
+```
+
+```elixir
+File.cwd!()
+
+Utils.load_text()
+|> Utils.parse_input()
+|> Enum.map(&(&1 |> Tuple.to_list() |> Enum.sort()))
+|> List.zip()
+|> Enum.map(&Part1.calc_diff/1)
+|> Enum.sum()
+```
+
+## Part 2
+
+```elixir
+[left_groups, right_groups] =
+  sample
+  |> Utils.parse_input()
+  |> Enum.map(fn row -> row |> Tuple.to_list() |> Enum.group_by(& &1) end)
+
+left_groups
+|> Enum.map(fn {key, val} ->
+  right_list_count =
+    (right_groups[key] || [])
+    |> length
+
+  String.to_integer(key) * length(val) * right_list_count
+end)
+|> Enum.sum
+```
+
+```elixir
+[left_groups, right_groups] =
+  Utils.load_text()
+  |> Utils.parse_input()
+  |> Enum.map(fn row -> row |> Tuple.to_list() |> Enum.group_by(& &1) end)
+
+left_groups
+|> Enum.map(fn {key, val} ->
+  right_list_count =
+    (right_groups[key] || [])
+    |> length
+
+  String.to_integer(key) * length(val) * right_list_count
+end)
+|> Enum.sum
+```
