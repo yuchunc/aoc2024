@@ -1,0 +1,104 @@
+# Day 2
+
+## Setups
+
+```elixir
+sample = """
+7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9
+"""
+```
+
+```elixir
+defmodule Utils do
+  def parse_input(input_text) do
+    input_text
+    |> String.split("\n", trim: true)
+    |> Enum.map(
+      &(String.split(&1, " ", trim: true)
+        |> Enum.map(fn str_int -> String.to_integer(str_int) end))
+    )
+  end
+
+  def load_text do
+    File.read!("priv/day2.txt")
+  end
+end
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def filter(row) do
+    diffs =
+      row
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.map(fn [left, right] -> left - right end)
+
+    decreasing = Enum.all?(diffs, fn diff -> diff < 0 && diff >= -3 end)
+    increasing = Enum.all?(diffs, fn diff -> diff > 0 && diff <= 3 end)
+
+    decreasing || increasing
+  end
+end
+```
+
+```elixir
+sample 
+|> Utils.parse_input
+|> Enum.filter(&Part1.filter/1)
+|> length
+```
+
+```elixir
+Utils.load_text() 
+|> Utils.parse_input
+|> Enum.filter(&Part1.filter/1)
+|> length
+```
+
+## Part 2
+
+```elixir
+defmodule Part2 do
+  def filter(row) do
+    full_range = Enum.chunk_every(row, 2, 1, :discard)
+
+    partial_ranges =
+      row
+      |> Enum.with_index()
+      |> Enum.map(fn {_, at} ->
+        List.delete_at(row, at) |> Enum.chunk_every(2, 1, :discard)
+      end)
+
+    [full_range | partial_ranges]
+    |> Enum.any?(fn combo ->
+      diffs = Enum.map(combo, fn [left, right] -> left - right end)
+      
+      decreasing = Enum.all?(diffs, fn diff -> diff < 0 && diff >= -3 end)
+      increasing = Enum.all?(diffs, fn diff -> diff > 0 && diff <= 3 end)
+
+      decreasing || increasing
+    end)
+  end
+end
+```
+
+```elixir
+sample 
+|> Utils.parse_input
+|> Enum.filter(&Part2.filter/1)
+|> length
+```
+
+```elixir
+Utils.load_text() 
+|> Utils.parse_input
+|> Enum.filter(&Part2.filter/1)
+|> length
+```
