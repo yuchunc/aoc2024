@@ -1,0 +1,71 @@
+# Day 3
+
+## Part 1
+
+```elixir
+sample = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
+```
+
+```elixir
+Regex.scan(~r/mul\((\d*),(\d*)\)/, sample)
+|> Enum.map(fn [_, left, right] -> 
+  String.to_integer(left) * String.to_integer(right)
+end)
+|> Enum.sum
+```
+
+```elixir
+sample = File.read!("priv/day3.txt")
+
+Regex.scan(~r/mul\((\d*),(\d*)\)/, sample)
+|> Enum.map(fn [_, left, right] -> 
+  String.to_integer(left) * String.to_integer(right)
+end)
+|> Enum.sum
+```
+
+## Part 2
+
+```elixir
+sample = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
+```
+
+```elixir
+defmodule Part2 do
+  def transform(parsed) do
+    do_transform(parsed, true, [])
+  end
+
+  defp do_transform([], _, acc), do: Enum.reverse(acc)
+
+  defp do_transform([["don't()"] | t], _, acc), do: do_transform(t, false, acc)
+
+  defp do_transform([["do()"] | t], _, acc), do: do_transform(t, true, acc)
+
+  defp do_transform([_ | t], false, acc), do: do_transform(t, false, acc)
+
+  defp do_transform([h | t], true, acc), do: do_transform(t, true, [h | acc])
+end
+```
+
+```elixir
+parsed = Regex.scan(~r/don't\(\)|do\(\)|mul\((\d*),(\d*)\)/, sample)
+
+Part2.transform(parsed)
+|> Enum.map(fn [_, left, right] -> 
+  String.to_integer(left) * String.to_integer(right)
+end)
+|> Enum.sum
+```
+
+```elixir
+sample = File.read!("priv/day3.txt")
+
+parsed = Regex.scan(~r/don't\(\)|do\(\)|mul\((\d*),(\d*)\)/, sample)
+
+Part2.transform(parsed)
+|> Enum.map(fn [_, left, right] -> 
+  String.to_integer(left) * String.to_integer(right)
+end)
+|> Enum.sum
+```

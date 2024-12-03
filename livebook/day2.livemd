@@ -1,5 +1,11 @@
 # Day 2
 
+```elixir
+Mix.install([
+  {:zigler, "~> 0.13.3"}
+])
+```
+
 ## Setups
 
 ```elixir
@@ -101,4 +107,18 @@ Utils.load_text()
 |> Utils.parse_input
 |> Enum.filter(&Part2.filter/1)
 |> length
+```
+
+```elixir
+defmodule ZigZig do
+  use Zig, otp_app: :zigler
+
+  ~Z"""
+  pub fn add_one(number: i64) i64 {
+      return number + 1;
+  }
+  """
+end
+
+ZigZig.add_one(41)
 ```
