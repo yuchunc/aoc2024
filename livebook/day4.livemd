@@ -27,11 +27,6 @@ MXMXAXMASX
 input = "priv/day4.txt"
 ```
 
-```elixir
-forward = ["X", "M", "A", "S"]
-  reverse = ["S", "A", "M", "X"]
-```
-
 ## Part 1
 
 ```elixir
@@ -45,10 +40,10 @@ defmodule Part1 do
 
   def get_perms(poss) do
     poss
-    |> Enum.flat_map(&flat_mapper(&1, poss))
+    |> Enum.flat_map(&flat_mapper/1)
   end
 
-  defp flat_mapper({pos, "X"}, poss) do
+  defp flat_mapper({pos, "X"}) do
     {row_i, col_i} = pos
 
     perm =
@@ -66,7 +61,7 @@ defmodule Part1 do
     perm
   end
 
-  defp flat_mapper(_, _), do: []
+  defp flat_mapper(_), do: []
 end
 ```
 
@@ -187,4 +182,80 @@ poss
   ]
 end)
 |> length
+```
+
+```elixir
+defmodule Temp do
+  def mapper({row, row_i}) do
+    row
+    |> String.split("", trim: true)
+    |> Enum.with_index()
+    |> Enum.map(fn {val, col_i} -> {{row_i, col_i}, val} end)
+  end
+
+  def get_perms(poss) do
+    poss
+    |> Enum.flat_map(&flat_mapper(&1, poss))
+  end
+
+  defp flat_mapper({pos, "A"}, poss) do
+    {row_i, col_i} = pos
+
+    [
+      [
+        {row_i, col_i},            # Center (A)
+        {row_i - 1, col_i - 1},    # Top-left (M)
+        {row_i - 1, col_i + 1},    # Top-right (S)
+        {row_i + 1, col_i - 1},    # Bottom-left (S)
+        {row_i + 1, col_i + 1}     # Bottom-right (M)
+      ]
+    ]
+    |> Enum.filter(&valid_positions?(&1, poss))
+  end
+
+  defp flat_mapper(_, _), do: []
+
+  defp valid_positions?(positions, poss) do
+    Enum.all?(positions, &Map.has_key?(poss, &1))
+  end
+
+  def count_xmas(sample) do
+    # Parse the grid into positions
+    poss =
+      sample
+      |> Enum.with_index()
+      |> Enum.flat_map(&mapper/1)
+      |> Map.new()
+
+    # Find all "X-MAS" permutations and count valid patterns
+    poss
+    |> get_perms()
+    |> Enum.filter(fn perm ->
+      word = Enum.map(perm, &poss[&1])
+
+      word == ["A", "M", "S", "M", "S"] || word == ["A", "S", "M", "S", "M"]
+    end)
+    |> length()
+  end
+end
+
+# Original Sample Test Input
+sample = [
+  "MMMSXXMASM",
+  "MSAMXMSMSA",
+  "AMXSXMAAMM",
+  "MSAMASMSMX",
+  "XMASAMXAMM",
+  "XXAMMXXAMA",
+  "SMSMSASXSS",
+  "SAXAMASAAA",
+  "MAMMMXMMMM",
+  "MXMXAXMASX"
+]
+
+# Run the test
+result = Temp.count_xmas(sample)
+IO.puts("Number of X-MAS patterns: #{result}")
+
+
 ```
