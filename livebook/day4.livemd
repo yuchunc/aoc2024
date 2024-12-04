@@ -1,0 +1,190 @@
+# Day 4
+
+```elixir
+Mix.install([
+  {:aoc2024,  path: "."}
+])
+
+
+```
+
+## Input
+
+```elixir
+sample = """
+MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX
+"""
+
+input = "priv/day4.txt"
+```
+
+```elixir
+forward = ["X", "M", "A", "S"]
+  reverse = ["S", "A", "M", "X"]
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def mapper({row, row_i}) do
+    row
+    |> String.split("", trim: true)
+    |> Enum.with_index()
+    |> Enum.map(fn {val, col_i} -> {{row_i, col_i}, val} end)
+  end
+
+  def get_perms(poss) do
+    poss
+    |> Enum.flat_map(&flat_mapper(&1, poss))
+  end
+
+  defp flat_mapper({pos, "X"}, poss) do
+    {row_i, col_i} = pos
+
+    perm =
+      [
+        [{row_i, col_i}, {row_i - 1, col_i - 1}, {row_i - 2, col_i - 2}, {row_i - 3, col_i - 3}],
+        [{row_i, col_i}, {row_i - 1, col_i}, {row_i - 2, col_i}, {row_i - 3, col_i}],
+        [{row_i, col_i}, {row_i - 1, col_i + 1}, {row_i - 2, col_i + 2}, {row_i - 3, col_i + 3}],
+        [{row_i, col_i}, {row_i, col_i - 1}, {row_i, col_i - 2}, {row_i, col_i - 3}],
+        [{row_i, col_i}, {row_i, col_i + 1}, {row_i, col_i + 2}, {row_i, col_i + 3}],
+        [{row_i, col_i}, {row_i + 1, col_i - 1}, {row_i + 2, col_i - 2}, {row_i + 3, col_i - 3}],
+        [{row_i, col_i}, {row_i + 1, col_i}, {row_i + 2, col_i}, {row_i + 3, col_i}],
+        [{row_i, col_i}, {row_i + 1, col_i + 1}, {row_i + 2, col_i + 2}, {row_i + 3, col_i + 3}]
+      ]
+
+    perm
+  end
+
+  defp flat_mapper(_, _), do: []
+end
+```
+
+```elixir
+poss =
+  sample
+  |> AoC2024.parse(&Part1.mapper/1)
+  |> List.flatten()
+  |> Map.new()
+
+poss
+|> Part1.get_perms()
+|> Enum.filter(fn perm ->
+  word = Enum.map(perm, & poss[&1])
+  word == ["X", "M", "A", "S"] || word == ["S", "A", "M", "X"]
+end)
+|> length
+```
+
+```elixir
+poss =
+  AoC2024.load_text(input)
+  |> AoC2024.parse(&Part1.mapper/1)
+  |> List.flatten()
+  |> Map.new()
+
+poss
+|> Part1.get_perms()
+|> Enum.filter(fn perm ->
+  word = Enum.map(perm, & poss[&1])
+  word == ["X", "M", "A", "S"] || word == ["S", "A", "M", "X"]
+end)
+|> length
+```
+
+## Part 2
+
+```elixir
+defmodule Part2 do
+  def mapper({row, row_i}) do
+    row
+    |> String.split("", trim: true)
+    |> Enum.with_index()
+    |> Enum.map(fn {val, col_i} -> {{row_i, col_i}, val} end)
+  end
+
+  def get_perms(poss) do
+    poss
+    |> Enum.flat_map(&flat_mapper(&1, poss))
+  end
+
+  defp flat_mapper({pos, "A"}, poss) do
+    {row_i, col_i} = pos
+
+    [[
+      {row_i, col_i}, # center
+      {row_i - 1, col_i - 1}, # top-left
+      {row_i - 1, col_i + 1}, # top-right
+      {row_i + 1, col_i - 1}, # bottom-left
+      {row_i + 1, col_i + 1} # bottom-right
+    ]]
+
+        [
+      [
+        {row_i, col_i}, # "A" center
+        {row_i - 1, col_i - 1}, # Top-left "M"
+        {row_i + 1, col_i - 1}, # Bottom-left "M"
+        {row_i - 1, col_i + 1}, # Top-right "S"
+        {row_i + 1, col_i + 1}  # Bottom-right "S"
+      ]
+    ]
+  end
+
+  defp flat_mapper(_, _), do: []
+end
+```
+
+```elixir
+poss =
+  sample
+  |> AoC2024.parse(&Part2.mapper/1)
+  |> List.flatten()
+  |> Map.new()
+
+poss
+|> Part2.get_perms()
+|> Enum.filter(fn perm ->
+  word = Enum.map(perm, &poss[&1])
+
+  word in [
+    ["A", "M", "S", "M", "S"],
+    ["A", "S", "M", "S", "M"],
+    ["A", "M", "M", "S", "S"],
+    ["A", "S", "S", "M", "M"]
+  ]
+end)
+|> length
+```
+
+```elixir
+poss =
+  input
+  |> AoC2024.load_text()
+  |> AoC2024.parse(&Part2.mapper/1)
+  |> List.flatten()
+  |> Map.new()
+
+poss
+|> Part2.get_perms()
+|> Enum.filter(fn perm ->
+  word = Enum.map(perm, &poss[&1])
+
+  word in [
+    ["A", "M", "S", "M", "S"],
+    ["A", "S", "M", "S", "M"],
+    ["A", "M", "M", "S", "S"],
+    ["A", "S", "S", "M", "M"]
+  ]
+end)
+|> length
+```
