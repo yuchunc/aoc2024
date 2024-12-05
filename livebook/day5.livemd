@@ -1,0 +1,155 @@
+# Day 5
+
+```elixir
+Mix.install([
+  {:aoc2024, path: (["."])}
+])
+```
+
+## Section
+
+```elixir
+sample = """
+47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47
+"""
+
+input = AoC2024.load_text("priv/day5.txt")
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def parse(str) do
+    [rules_str, updates_str] = String.split(str, "\n\n")
+
+    rules = AoC2024.parse(rules_str, fn {str, _} -> String.split(str, "|") end)
+    updates = AoC2024.parse(updates_str, fn {str, _} -> {str, String.split(str, ",")} end)
+
+    {rules, updates}
+  end
+
+  def valid_update?({str, list}, rules) do
+    Enum.all?(list, &validator(&1, str, rules))
+  end
+
+  defp validator(number, str, rules) do
+    [left_list, right_list] =
+      str |> String.split(number) |> Enum.map(&String.split(&1, ",", trim: true))
+
+    Enum.all?(left_list, fn l_number ->
+      Enum.find(rules, &(&1 == [l_number, number]))
+      end) &&
+      Enum.all?(right_list, fn r_number ->
+        Enum.find(rules, &(&1 == [number, r_number]))
+      end)
+  end
+end
+```
+
+```elixir
+{rules, updates} =
+  sample
+  |> Part1.parse()
+
+updates
+|> Enum.filter(&Part1.valid_update?(&1, rules))
+|> Enum.map(fn {_, list} ->
+  middle_index = div(length(list), 2)
+
+  list
+  |> Enum.at(middle_index)
+  |> String.to_integer()
+end)
+|> Enum.sum()
+```
+
+```elixir
+{rules, updates} =
+  input
+  |> Part1.parse()
+
+updates
+|> Enum.filter(&Part1.valid_update?(&1, rules))
+|> Enum.map(fn {_, list} ->
+  middle_index = div(length(list), 2)
+
+  list
+  |> Enum.at(middle_index)
+  |> String.to_integer()
+end)
+|> Enum.sum()
+```
+
+## Part 2
+
+```elixir
+defmodule Part2 do
+  def fix_list(list, rules) do
+    Enum.sort(list, &Enum.any?(rules, fn rule -> rule == [&1, &2] end))
+  end
+end
+```
+
+```elixir
+{rules, updates} =
+  sample
+  |> Part1.parse()
+
+updates
+|> Enum.reject(&Part1.valid_update?(&1, rules))
+|> Enum.map(fn {_, list} ->
+  middle_index = div(length(list), 2)
+
+  list
+  |> Part2.fix_list(rules)
+  |> Enum.at(middle_index)
+  |> String.to_integer()
+end)
+|> Enum.sum()
+```
+
+```elixir
+{rules, updates} = 
+  input
+  |> Part1.parse()
+
+updates
+|> Enum.reject(&Part1.valid_update?(&1, rules))
+|> Enum.map(fn {_, list} ->
+  middle_index = div(length(list), 2)
+
+  list
+  |> Part2.fix_list(rules)
+  |> Enum.at(middle_index)
+  |> String.to_integer()
+end)
+|> Enum.sum()
+```
